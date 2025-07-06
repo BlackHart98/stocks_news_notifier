@@ -1,0 +1,9 @@
+services:
+  selenium-chromium:
+    image: selenium/standalone-chromium:latest
+    ports:
+      - "4444:4444"
+      - "5900:5900"
+      - "7900:7900"
+    shm_size: 2g
+    restart: unless-stopped
