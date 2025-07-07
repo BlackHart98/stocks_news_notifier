@@ -1,21 +1,22 @@
 #!/bin/bash
 
 if [ "$1" != "-u" ]; then 
-    echo Invalid command parameter, expect start_notifier -u <telegram_user_id> 
+    echo "Invalid command parameter, expect start_notifier -u <telegram_user_id>" 
     exit 1
 fi
 
-if [ "$2" != "" ]; then 
-    echo Invalid command parameter, expect start_notifier -u <telegram_user_id> 
+if [ "$2" == "" ]; then 
+    echo "Invalid command parameter, expect start_notifier -u <telegram_user_id> "
     exit 1
 fi
 
-python -m venv env &&\ 
-source env/bin/activate
+if [ ! -d "env" ]; then 
+    echo "Creating python virtual environment..."
 
+    python -m venv env &&\ 
+    source env/bin/activate
+fi
 
-pip install -r requirements.txt
+docker compose up --wait
 
-docker compose up -d
-
-python main.py -u $2
+pip install -r requirements.txt && python main.py -u $2

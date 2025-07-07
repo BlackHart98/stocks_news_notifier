@@ -45,16 +45,25 @@ class NasdaqNewsObserver(StockNewsObserver):
                 else:
                     article_title = ''.join(article.find('span', class_='jupiter22-c-article-list__item_title').contents).strip()
                     article_link = (f"https://www.nasdaq.com{article.find('a', class_='jupiter22-c-article-list__item_title_wrapper')['href']}").strip()
-                    # self._driver.get(article_link) 
-                    article_summary =  ai_agent.summarize('')
-                    article_impact = ai_agent.measure_impact('')
+                    self._driver.get(article_link) 
+                    page_source_: str = self._driver.page_source
+                    soup_ : BeautifulSoup = BeautifulSoup(page_source_, "html.parser")
+                    
+                    article_content = soup_.find("div", class_="body__content").get_text()
+                    article_summary = (article_content.split(sep=".")[0]).strip() + "."
+                    
+                    article_impact = ai_agent.measure_impact(tick, article_content.strip())
+                    time.sleep(3)
+                    
                     temp_ += [{
                         "article_title" : article_title,
                         "article_link" : article_link,
                         "article_summary" : article_summary,
-                        "article_impact" :article_impact,
+                        "article_impact" : article_impact,
+                        "article_content": article_content,
                         "article_date" : article_date,
                     }]
+                    
             if len(temp_) == 0:
                  return None
             else:

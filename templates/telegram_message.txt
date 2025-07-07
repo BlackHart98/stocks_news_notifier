@@ -2,5 +2,5 @@
 {% for item in news%}
 [{{ item.article_title }}]({{ item.article_link }})
 {{ item.article_summary }}
-impact: {{ item.article_impact }}
+__impact score:__ {{ item.article_impact }}
 {% endfor %}

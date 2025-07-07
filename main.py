@@ -32,6 +32,7 @@ OPEN_AI_KEY = os.getenv("OPEN_AI_KEY")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 TELEGRAM_API_ID = os.getenv("TELEGRAM_API_ID")
 TELEGRAM_API_HASH = os.getenv("TELEGRAM_API_HASH")
+MISTRAL_AI_KEY = os.getenv("MISTRAL_AI_KEY")
 
 
 
@@ -50,7 +51,7 @@ async def main(argv: t.List[str]):
     previous_state = {item : [] for item in ticks}
     
     logging.info(f"Fetched {len(ticks)} stock ticks")
-    ai_bot: AIAgent = AIAgent("", "")
+    ai_bot: AIAgent = AIAgent(MISTRAL_AI_KEY)
     telegram_bot:TelegramAPIWrapper = TelegramAPIWrapper(TELEGRAM_API_ID, TELEGRAM_API_HASH, TELEGRAM_TOKEN)
     
     # Set up Chromium options
@@ -79,7 +80,7 @@ async def main(argv: t.List[str]):
     except Exception as e:
         logging.info(f"An error occurred: {e}")
     driver: t.Optional[webdriver.Remote] = None
-    
+    already_rated_article = {}
     while True:
         with open(directory_name + "/session_ids.txt", "w") as f:
             driver : webdriver.Remote = webdriver.Remote(
@@ -104,8 +105,8 @@ async def main(argv: t.List[str]):
                     logging.info(updates)
                 if updates is not None:
                     logging.info(f"Sending notification for {item}")
-                    result = await telegram_bot.send_news_notification(user_id, updates)
-                    logging.info(f"Telegram send result for {item}: {result}")
+                    _ = await telegram_bot.send_news_notification(user_id, updates)
+                    logging.info(f"Telegram send result for {item}")
                     previous_state[item] = temp_
                 else:
                     logging.info(f"No updates to send for {item}")

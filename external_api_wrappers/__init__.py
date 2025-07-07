@@ -11,21 +11,45 @@ from dotenv import load_dotenv, find_dotenv
 from jinja2 import Environment, FileSystemLoader
 from telethon import TelegramClient, events
 from dataclasses import dataclass
-
+from openai import OpenAI
+from mistralai import Mistral
 
 class AIAgent:
-    _summary_injection = None
-    _impact_measure_injection = None
+    _client: t.Optional[OpenAI] = None 
+    _model: t.Optional[str] = None
     
-    def __init__(self, summary_injection: str, impact_measure_injection: str):
-        self._summary_injection = summary_injection
-        self._impact_measure_injection = impact_measure_injection
+    def __init__(self, api_key: str, model: str="mistral-large-latest"):
+        self._model = model
+        self._client = Mistral(api_key=api_key)
+    
+    def measure_impact(self, tick: str, content: str) -> str:
+        impact_measure_injection: str = f"""
+            Your role is to act as a stock news impact rater.
+            Rate how important the news is **for {tick}** and how strong the likely market impact will be, 
+            using only the 🚨 siren emoji on a scale of 1–5:
+            🚨 = not very relevant, 🚨🚨🚨🚨🚨 = very relevant and impactful.
+            Respond with exactly 1–5 sirens, nothing else.
+        """
+        try:
+            response = self._client.chat.complete(
+                model=self._model,
+                messages=[
+                    {"role": "system", "content": impact_measure_injection},
+                    {
+                        "role": "user"
+                        , "content": content
+                        },
+                ],
+            )
+            result = response.choices[0].message.content.strip()
+            # optionally validate result here
+            return result
+        except Exception as e:
+            logging.error(f"Error rating impact: {e}")
+            return "🚨"
 
-    def summarize(self, content: str) -> str:
-        return ""
-    
-    def measure_impact(self, content: str) -> int:
-        return 0
+    def measure_impact_(self, content_news: t.Dict[str, t.Any]) -> t.Dict[str, t.Any]:
+        return {}
 
 
 class TelegramAPIWrapper:
