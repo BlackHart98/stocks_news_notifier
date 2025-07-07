@@ -10,7 +10,11 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from utils import compare_moments_ago, check_updates, purge_all_selenium_sessions
+from utils import (
+    compare_moments_ago, 
+    check_updates, 
+    purge_all_selenium_sessions, 
+    get_link_content_association)
 import asyncio
 import logging
 from dotenv import load_dotenv, find_dotenv
@@ -80,8 +84,11 @@ async def main(argv: t.List[str]):
     except Exception as e:
         logging.info(f"An error occurred: {e}")
     driver: t.Optional[webdriver.Remote] = None
-    already_rated_article = {}
+    seen_article = {} # max at 1000 links truncate dictionary if exceeded 
     while True:
+        logging.info(f"Found {len(seen_article)} unique news link, will truncate at 1000")
+        if len(seen_article) > 1000:
+            seen_article = {}
         with open(directory_name + "/session_ids.txt", "w") as f:
             driver : webdriver.Remote = webdriver.Remote(
                 command_executor=REMOTE_URL,
@@ -92,7 +99,8 @@ async def main(argv: t.List[str]):
         sample = NasdaqNewsObserver(driver)
         for item in ticks:
             try:
-                temp_ = sample.observe_tick(item, ai_bot)
+                temp_ = sample.observe_tick(item, seen_article=seen_article)
+                seen_article.update(get_link_content_association(temp_))
                 logging.info(f"Current page {temp_}")
                 updates = None
                 if len(previous_state[item]) == 0:

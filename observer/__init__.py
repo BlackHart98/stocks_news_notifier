@@ -30,7 +30,7 @@ class NasdaqNewsObserver(StockNewsObserver):
         self._driver = driver
         self._earliest_time = earliest_time
     
-    def observe_tick(self, tick: str, ai_agent: AIAgent, wait_time: t.Any = 10) -> t.Optional[t.Dict[str, t.Any]]:
+    def observe_tick(self, tick: str, wait_time: t.Any = 10, seen_article: t.Dict[str, t.Any]={}) -> t.Optional[t.Dict[str, t.Any]]:
         try:
             wait = WebDriverWait(self._driver, wait_time)
             self._driver.get(f"https://www.nasdaq.com/market-activity/stocks/{tick.lower()}/news-headlines") 
@@ -45,11 +45,15 @@ class NasdaqNewsObserver(StockNewsObserver):
                 else:
                     article_title = ''.join(article.find('span', class_='jupiter22-c-article-list__item_title').contents).strip()
                     article_link = (f"https://www.nasdaq.com{article.find('a', class_='jupiter22-c-article-list__item_title_wrapper')['href']}").strip()
-                    self._driver.get(article_link) 
-                    page_source_: str = self._driver.page_source
-                    soup_ : BeautifulSoup = BeautifulSoup(page_source_, "html.parser")
-                    
-                    article_content = soup_.find("div", class_="body__content").get_text()
+                    article_content = ""
+                    if article_link not in seen_article:
+                        self._driver.get(article_link) 
+                        page_source_: str = self._driver.page_source
+                        soup_ : BeautifulSoup = BeautifulSoup(page_source_, "html.parser")
+                        
+                        article_content = soup_.find("div", class_="body__content").get_text()
+                    else:
+                        article_content = seen_article[article_link]
                     article_summary = (article_content.split(sep=".")[0]).strip() + "."
                     
                     temp_ += [{

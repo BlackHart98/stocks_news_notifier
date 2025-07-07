@@ -75,3 +75,11 @@ def purge_all_selenium_sessions(url: str, session_ids: t.List[str]) -> None:
         # if is_url_alive(f"{url}/session/{item}"):
             logging.info(f"Destroy session: {item}")
             requests.delete(f"{url}/session/{item}")
+
+
+def get_link_content_association(site_query: t.Optional[t.Dict[str, t.Any]]) -> t.Dict[str, t.Any]:
+    if site_query is None: return {}
+    result : t.Dict[str, t.Any] = {}
+    for item in site_query["news"]:
+        result[item["article_link"]] = item["article_content"]
+    return result

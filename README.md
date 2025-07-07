@@ -1,4 +1,4 @@
-# Stock News Bot (Incomplete readme)
+# Stock News Bot
 This listens for new update and notifies you via telegram
 
 
