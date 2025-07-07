@@ -42,7 +42,7 @@ python main.py -u <user_id>
 ```
 
 ## Too many steps? Do this instead
-1. 1. Create a `.env` file to keep your credentials, which are
+1. Create a `.env` file to keep your credentials, which are
 ```env
 OPEN_AI_KEY=
 TELEGRAM_TOKEN=
@@ -50,6 +50,8 @@ TELEGRAM_API_ID=
 TELEGRAM_API_HASH=
 MISTRAL_AI_KEY=
 ```
+> [!Note]
+> I am currently using Mistral API
 2. Open the terminal and run this for linux and macOS
 ```sh
 sh ./bin/start_notifier -u <user_id>
