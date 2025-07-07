@@ -37,10 +37,10 @@ TELEGRAM_API_HASH = os.getenv("TELEGRAM_API_HASH")
 
 async def main(argv: t.List[str]):
     if len(argv) != 3:
-        logging.error("Invalid command parameters, expect `python main.py -u <telegram_user_id>`")
+        logging.error("Invalid command parameter, expect `python main.py -u <telegram_user_id>`")
         sys.exit()
     if argv[1] != "-u":
-        logging.error("Invalid command parameters, expect `python main.py -u <telegram_user_id>`")
+        logging.error("Invalid command parameter, expect `python main.py -u <telegram_user_id>`")
         sys.exit()
     
     user_id = argv[2]
