@@ -3,7 +3,7 @@ This listens for new update and notifies you via telegram
 
 
 ## Prerquisites
-1. Install (docker)[https://docs.docker.com/get-started/get-docker/] 
+1. Install [docker](https://docs.docker.com/get-started/get-docker/)
 2. Install Python3 (python 3.12 preferably)
 
 ## How to use this
