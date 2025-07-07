@@ -38,14 +38,16 @@ TELEGRAM_API_ID = os.getenv("TELEGRAM_API_ID")
 TELEGRAM_API_HASH = os.getenv("TELEGRAM_API_HASH")
 MISTRAL_AI_KEY = os.getenv("MISTRAL_AI_KEY")
 
+MAX_SEEN_ARTICLES = 1000
+SLEEP_INTERVAL = 600 # 10 minutes
 
 
 async def main(argv: t.List[str]):
     if len(argv) != 3:
-        logging.error("Invalid command parameter, expect `python main.py -u <telegram_user_id>`")
+        logging.error("Usage: python main.py -u <telegram_user_id>")
         sys.exit()
     if argv[1] != "-u":
-        logging.error("Invalid command parameter, expect `python main.py -u <telegram_user_id>`")
+        logging.error("Usage: python main.py -u <telegram_user_id>")
         sys.exit()
     
     user_id = argv[2]
@@ -84,10 +86,10 @@ async def main(argv: t.List[str]):
     except Exception as e:
         logging.info(f"An error occurred: {e}")
     driver: t.Optional[webdriver.Remote] = None
-    seen_article = {} # max at 1000 links truncate dictionary if exceeded 
+    seen_article = {} # max at MAX_SEEN_ARTICLES links truncate dictionary if exceeded 
     while True:
-        logging.info(f"Found {len(seen_article)} unique news link, will truncate at 1000")
-        if len(seen_article) > 1000:
+        logging.info(f"Found {len(seen_article)} unique news link, will truncate at {MAX_SEEN_ARTICLES}")
+        if len(seen_article) > MAX_SEEN_ARTICLES:
             seen_article = {}
         with open(directory_name + "/session_ids.txt", "w") as f:
             driver : webdriver.Remote = webdriver.Remote(
@@ -101,7 +103,6 @@ async def main(argv: t.List[str]):
             try:
                 temp_ = sample.observe_tick(item, seen_article=seen_article)
                 seen_article.update(get_link_content_association(temp_))
-                logging.info(f"Current page {temp_}")
                 updates = None
                 if len(previous_state[item]) == 0:
                     updates = check_updates(None, temp_)
@@ -121,7 +122,7 @@ async def main(argv: t.List[str]):
                 logging.error(f"Error processing {item}")
         await telegram_bot.disconnect()
         driver.quit()
-        time.sleep(600)
+        time.sleep(SLEEP_INTERVAL)
         
 
 
