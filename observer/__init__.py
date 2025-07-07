@@ -52,14 +52,11 @@ class NasdaqNewsObserver(StockNewsObserver):
                     article_content = soup_.find("div", class_="body__content").get_text()
                     article_summary = (article_content.split(sep=".")[0]).strip() + "."
                     
-                    article_impact = ai_agent.measure_impact(tick, article_content.strip())
-                    time.sleep(3)
-                    
                     temp_ += [{
                         "article_title" : article_title,
                         "article_link" : article_link,
                         "article_summary" : article_summary,
-                        "article_impact" : article_impact,
+                        "article_impact" : "",
                         "article_content": article_content,
                         "article_date" : article_date,
                     }]

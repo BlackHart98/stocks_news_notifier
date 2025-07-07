@@ -101,11 +101,10 @@ async def main(argv: t.List[str]):
                     logging.info(updates)
                 else:
                     updates = check_updates(previous_state[item], temp_)
-                    logging.info(check_updates(previous_state[item], temp_))
                     logging.info(updates)
                 if updates is not None:
                     logging.info(f"Sending notification for {item}")
-                    _ = await telegram_bot.send_news_notification(user_id, updates)
+                    _ = await telegram_bot.send_news_notification(user_id, ai_bot.measure_impact(updates))
                     logging.info(f"Telegram send result for {item}")
                     previous_state[item] = temp_
                 else:

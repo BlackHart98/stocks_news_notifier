@@ -22,7 +22,7 @@ class AIAgent:
         self._model = model
         self._client = Mistral(api_key=api_key)
     
-    def measure_impact(self, tick: str, content: str) -> str:
+    def _measure_impact(self, tick: str, content: str, max_attempts: int = 5, base_delay: float = 1.0) -> str:
         impact_measure_injection: str = f"""
             Your role is to act as a stock news impact rater.
             Rate how important the news is **for {tick}** and how strong the likely market impact will be, 
@@ -30,26 +30,52 @@ class AIAgent:
             🚨 = not very relevant, 🚨🚨🚨🚨🚨 = very relevant and impactful.
             Respond with exactly 1–5 sirens, nothing else.
         """
-        try:
-            response = self._client.chat.complete(
-                model=self._model,
-                messages=[
-                    {"role": "system", "content": impact_measure_injection},
-                    {
-                        "role": "user"
-                        , "content": content
-                        },
-                ],
-            )
-            result = response.choices[0].message.content.strip()
-            # optionally validate result here
-            return result
-        except Exception as e:
-            logging.error(f"Error rating impact: {e}")
-            return "🚨"
+        for attempt in range(1, max_attempts + 1):
+            try:
+                response = self._client.chat.complete(
+                    model=self._model,
+                    messages=[
+                        {"role": "system", "content": impact_measure_injection},
+                        {
+                            "role": "user"
+                            , "content": content
+                            },
+                    ],
+                )
+                
+                result = response.choices[0].message.content.strip()
+                # optionally validate result here
+                return result
+            except Exception as e:
+                err_msg = str(e)
+                # Log the error
+                logging.warning(f"Attempt {attempt}: API call failed: {err_msg}")
 
-    def measure_impact_(self, content_news: t.Dict[str, t.Any]) -> t.Dict[str, t.Any]:
-        return {}
+                if "429" in err_msg or "rate" in err_msg.lower() or "capacity" in err_msg.lower():
+                    sleep_time = base_delay * (2 ** (attempt - 1))
+                    jitter = random.uniform(0, 0.2)
+                    total_sleep = sleep_time + jitter
+                    logging.info(f"Rate-limited. Sleeping for {total_sleep:.2f}s before retrying…")
+                    time.sleep(total_sleep)
+                    
+        logging.error(f"Error rating impact: {e}")
+        return "🚨"
+
+    def measure_impact(self, content_news: t.Dict[str, t.Any]) -> t.Dict[str, t.Any]:
+        result = {
+            "tick" : content_news["tick"],
+            "news" : []
+        }
+        for item in content_news["news"]:
+            result["news"] += [{
+                "article_title" : item["article_title"],
+                "article_link" : item["article_link"],
+                "article_summary" : item["article_summary"],
+                "article_impact" : self._measure_impact(result["tick"], item["article_content"]),
+                "article_content": item["article_content"],
+                "article_date" : item["article_date"],
+            }]
+        return result
 
 
 class TelegramAPIWrapper:
