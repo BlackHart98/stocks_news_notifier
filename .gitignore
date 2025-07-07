@@ -1,6 +1,6 @@
 .env
 bot.session
-bot.session.journal
+bot.session-journal
 env
 **/__pycache__
 .app_data
