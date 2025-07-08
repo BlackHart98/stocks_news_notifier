@@ -26,7 +26,7 @@ class NasdaqNewsObserver(StockNewsObserver):
     _driver: t.Optional[webdriver.Remote] = None
     _earliest_time: t.Optional[str] = None
     
-    def __init__(self, driver: webdriver.Remote, earliest_time: str = "7 hours ago"):
+    def __init__(self, driver: webdriver.Remote, earliest_time: str = "2 hours ago"):
         self._driver = driver
         self._earliest_time = earliest_time
     
@@ -54,7 +54,7 @@ class NasdaqNewsObserver(StockNewsObserver):
                         article_content = soup_.find("div", class_="body__content").get_text()
                     else:
                         article_content = seen_article[article_link]
-                    article_summary = (article_content.split(sep=".")[0]).strip() + "."
+                    article_summary = (article_content.split(sep=".\n")[0]).strip() + "."
                     
                     temp_ += [{
                         "article_title" : article_title,
